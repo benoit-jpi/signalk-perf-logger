@@ -18,4 +18,4 @@ What is logged is :
 - AWA : Apparent Wind Angle
 
 ## Basis
-Very largely inspired by the project signalk-data-logger (https://github.com/mairas/signalk-data-logger/tree/master)
+Very largely inspired by the project signalk-data-logger (https://github.com/mairas/signalk-data-logger)
