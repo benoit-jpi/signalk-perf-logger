@@ -1,3 +1,4 @@
+{
   "name": "signalk-perf-logger",
   "version": "0.1.0",
   "description": "Signal K plugin to log performance data to csv files.",
