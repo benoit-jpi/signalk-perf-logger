@@ -123,10 +123,26 @@ module.exports = function(app) {
 	})
     }
 
+    function writeHeaders() {
+	try {
+	    fs.appendFile(
+		path.join(logDir, logFileName),
+		"timestamp, lat, lon, sog, cog, stw, aws, awa\n", (err) => {
+		    if (err) throw err;
+		}
+	    )
+	} catch (err) {
+	    console.log(err)
+	}
+    }
+
     function rotateLogFile(time, compressPrevious = false) {
 	// update the log filename
 	const oldLogFileName = logFileName
 	logFileName = "perf-data.".concat(time.toISOString().replace(/\:/g,"-")).concat('.log')
+
+	// write the column headers
+	writeHeaders();
 
 	// gzip the old logfile
 	if (compressPrevious) {
