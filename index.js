@@ -126,7 +126,7 @@ module.exports = function(app) {
 	try {
 	    fs.appendFile(
 		path.join(logDir, logFileName),
-		"timestamp, lat, lon, sog, cog, stw, aws, awa\n", (err) => {
+		"timestamp,lat,lon,sog,cog,stw,aws,awa\n", (err) => {
 		    if (err) throw err;
 		}
 	    )
