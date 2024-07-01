@@ -6,7 +6,7 @@ A Signal K Node server plugin for logging performance data to csv files.
 
 A directory have to be defined for writing the csv files. Make sure the signalk-server process has permissions to write to the defined directory !
 
-What is logged is :
+What is logged ?
 - Timestamp
 - Latitude WGS84 (decimal degrees)
 - Longitude WGS84 (decimal degrees)
