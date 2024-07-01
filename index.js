@@ -23,7 +23,7 @@ module.exports = function(app) {
     var plugin = {};
     var logDir = ""
     var logFileName = "data_log.json"
-    var logRotationInterval = 600
+    var logRotationInterval = 3600
 
     plugin.id = "sk-perf-logger"
     plugin.name = "Signal K perf data logger"
@@ -85,14 +85,13 @@ module.exports = function(app) {
 	rotateLogFile(new Date())
 
 	if (logRotationInterval > 0) {
-	    setInterval(() => { rotateLogFile(new Date(), true) }, logRotationInterval * 1000 )
+	    setInterval(() => { rotateLogFile(new Date(), true) }, logRotationInterval*1000 )
 	}
 
 	app.debug("logging performance data")
 	app.signalk.on('delta', (delta) => { writeDelta(delta) })
 
     }
- 
 
     plugin.stop = function () {
 	// compress the log file
