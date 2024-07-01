@@ -1,21 +1,20 @@
 # signalk-data-logger
 
 A Signal K Node server plugin for logging performance data to csv files.
-The file rotation interval can be configured and the old files are compressed to save space.
-
-## Installation
-
-Should be eventually available on the Signal K Appstore.
 
 ## Configuration
 
-A directory have to be defined for writing the csv files. Make sure the Node server process has permissions to write to the defined directory!
+A directory have to be defined for writing the csv files. Make sure the signalk-server process has permissions to write to the defined directory !
 
 What is logged is :
 - Timestamp
-- STW : Speed Through Water
-- AWS : Apparent Wind Speed
-- AWA : Apparent Wind Angle
+- Latitude WGS84 (decimal degrees)
+- Longitude WGS84 (decimal degrees)
+- SOG : Speed Over Ground (knots)
+- COG : Course Over Ground (degrees/true North)
+- STW : Speed Through Water (knots)
+- AWS : Apparent Wind Speed (knots)
+- AWA : Apparent Wind Angle (degrees/heading line)
 
 ## Basis
-Very largely inspired by the project signalk-data-logger (https://github.com/mairas/signalk-data-logger)
+© Largely inspired by the project signalk-data-logger (https://github.com/mairas/signalk-data-logger)
