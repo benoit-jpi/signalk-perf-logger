@@ -24,6 +24,7 @@ module.exports = function(app) {
     var logDir = ""
     var logFileName = "data_log.json"
     var logRotationInterval = 3600
+    var period = 300
 
     plugin.id = "sk-perf-logger"
     plugin.name = "Signal K perf data logger"
@@ -49,10 +50,16 @@ module.exports = function(app) {
 		title: 'Subscription context',
             default: 'vessels.self'
 	    },
+	    period: {
+		type: 'number',
+		title: 'Logging period.',
+		default: 300
+	    }
 	}
     }
 
     plugin.start = function (options) {
+
 	if (typeof options.logdir === 'undefined') {
 	    app.setProviderStatus('Log directory not defined, plugin disabled')
 	    return
@@ -60,6 +67,7 @@ module.exports = function(app) {
 	logDir = options.logdir
 	logRotationInterval = options.interval
 	context = options.context
+	period = options.period
 
 	if (!fs.existsSync(logDir)) {
 	    // attempt creating the log directory
@@ -88,22 +96,38 @@ module.exports = function(app) {
 	    setInterval(() => { rotateLogFile(new Date(), true) }, logRotationInterval*1000 )
 	}
 
-	app.debug("logging performance data")
-	app.signalk.on('delta', (delta) => { writeDelta(delta) })
-
+	setInterval(() => { writeData() }, period * 1000 )
     }
-
+    
     plugin.stop = function () {
+
 	// compress the log file
 	rotateLogFile(new Date(), true)
     }
     return plugin
 
-    function writeDelta(delta) {
+    function writeData() {
+	//	timestamp,lat,lon,sog,cog,stw,aws,awa
 	try {
+	    let obj = {
+		datetime : app.getSelfPath('navigation.datetime.value'),
+		position : app.getSelfPath('navigation.position.value'),
+		sog : app.getSelfPath('navigation.speedOverGround.value'),
+		cog : app.getSelfPath('navigation.courseOverGroundTrue.value'),
+		stw : app.getSelfPath('navigation.speedThroughWater.value'),
+		aws : app.getSelfPath('environment.wind.speedApparent'),
+		awa : app.getSelfPath('environment.wind.angleApparent')
+	    }
 	    fs.appendFile(
 		path.join(logDir, logFileName),
-		new Date().toISOString().concat(" ").concat(JSON.stringify(delta)).concat("\n"), (err) => {
+		(obj.datetime).concat(",")
+		    .concat(obj.position.latitude).concat(",")
+		    .concat(obj.position.longitude).concat(",")
+		    .concat(obj.sog).concat(",")
+		    .concat(obj.cog).concat(",")
+		    .concat(obj.stw).concat(",")
+		    .concat(obj.aws).concat(",")
+		    .concat(obj.awa).concat("\n"), (err) => {
 		    if (err) throw err;
 		}
 	    )
