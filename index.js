@@ -114,28 +114,28 @@ module.exports = function(app) {
     function writeData() {
 	//	timestamp,lat,lon,sog,cog,stw,aws,awa
 	try {
-	    let obj = {
-		datetime : app.getSelfPath('navigation.datetime.value'),
-		position : app.getSelfPath('navigation.position.value'),
-		sog : app.getSelfPath('navigation.speedOverGround.value'),
-		cog : app.getSelfPath('navigation.courseOverGroundTrue.value'),
-		stw : app.getSelfPath('navigation.speedThroughWater.value'),
-		aws : app.getSelfPath('environment.wind.speedApparent'),
-		awa : app.getSelfPath('environment.wind.angleApparent')
+	    let tunix=Math.round(+new Date())
+	    let datetime=app.getSelfPath('navigation.datetime.value')
+	    let timestamp=Date.parse(datetime)
+
+	    if ((tunix-timestamp) < period * 1000) { // only log if age of data < period
+
+		let latitude=Number(app.getSelfPath('navigation.position.value.latitude')).toFixed(6)
+		let longitude=Number(app.getSelfPath('navigation.position.value.longitude')).toFixed(6)
+		let sog=Number(app.getSelfPath('navigation.speedOverGround.value')).toFixed(2)
+		let cog=Number(app.getSelfPath('navigation.courseOverGroundTrue.value')).toFixed()
+		let stw=Number(app.getSelfPath('navigation.speedThroughWater.value')).toFixed(2)
+		let aws=Number(app.getSelfPath('environment.wind.speedApparent')).toFixed()
+		let awa=Number(app.getSelfPath('environment.wind.angleApparent')).toFixed()
+
+		fs.appendFile(
+		    path.join(logDir, logFileName),
+		    datetime+","+latitude+","+longitude+","+sog+","+cog+","+stw+","+aws+","+awa+"\n",
+		    (err) => {
+			if (err) throw err;
+		    }
+		)
 	    }
-	    fs.appendFile(
-		path.join(logDir, logFileName),
-		(obj.datetime).concat(",")
-		    .concat(obj.position.latitude).concat(",")
-		    .concat(obj.position.longitude).concat(",")
-		    .concat(obj.sog).concat(",")
-		    .concat(obj.cog).concat(",")
-		    .concat(obj.stw).concat(",")
-		    .concat(obj.aws).concat(",")
-		    .concat(obj.awa).concat("\n"), (err) => {
-		    if (err) throw err;
-		}
-	    )
 	} catch (err) {
 	    console.log(err)
 	}
@@ -155,7 +155,7 @@ module.exports = function(app) {
 	try {
 	    fs.appendFile(
 		path.join(logDir, logFileName),
-		"timestamp,lat,lon,sog,cog,stw,aws,awa\n", (err) => {
+		"time,lat,lon,sog,cog,stw,aws,awa\n", (err) => {
 		    if (err) throw err;
 		}
 	    )
