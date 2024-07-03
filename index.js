@@ -24,6 +24,8 @@ module.exports = function(app) {
     var logDir = ""
     var logFileName = "data_log.json"
     var logRotationInterval = 3600
+    var timerRotationId
+    var timerId
     var period = 300
 
     plugin.id = "sk-perf-logger"
@@ -93,13 +95,16 @@ module.exports = function(app) {
 	rotateLogFile(new Date())
 
 	if (logRotationInterval > 0) {
-	    setInterval(() => { rotateLogFile(new Date(), true) }, logRotationInterval*1000 )
+	    timerRotationId = setInterval(() => { rotateLogFile(new Date(), true) }, logRotationInterval * 1000 )
 	}
 
-	setInterval(() => { writeData() }, period * 1000 )
+	timerId = setInterval(() => { writeData() }, period * 1000 )
     }
     
     plugin.stop = function () {
+
+	clearInterval(timerRotationId)
+	clearInterval(timerId)
 
 	// compress the log file
 	rotateLogFile(new Date(), true)
