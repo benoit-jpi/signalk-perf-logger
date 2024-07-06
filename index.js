@@ -23,10 +23,8 @@ module.exports = function(app) {
     var plugin = {};
     var logDir = ""
     var logFileName = "data_log.json"
-    var logRotationInterval = 3600
     var timerRotationId
     var timerId
-    var period = 300
 
     plugin.id = "sk-perf-logger"
     plugin.name = "Signal K perf data logger"
@@ -42,7 +40,7 @@ module.exports = function(app) {
 		title: 'Data log file directory',
             default: '/root/.signalk/sk-perf-data'
 	    },
-	    interval: {
+	    logrotationinterval: {
 		type: 'number',
 		title: 'Log rotation interval (in seconds). Value of zero disables log rotation.',
             default: 3600
@@ -67,7 +65,7 @@ module.exports = function(app) {
 	    return
 	}
 	logDir = options.logdir
-	logRotationInterval = options.interval
+	logRotationInterval = options.logrotationinterval
 	context = options.context
 	period = options.period
 
@@ -118,24 +116,65 @@ module.exports = function(app) {
 	    let datetime=app.getSelfPath('navigation.datetime.value')
 	    let timestamp=Date.parse(datetime)
 
+	    app.handleMessage(plugin.id, {
+		updates: [
+		    {
+			values: [
+			    {
+				path: 'environment.wind.speedApparent',
+				value: 5.045
+			    }
+			]
+		    },
+		    {
+			values: [
+			    {
+				path: 'environment.wind.angleApparent',
+				value: 5.64159
+			    }
+			]
+		    },
+		    {
+			values: [
+			    {
+				path: 'navigation.speedThroughWater',
+				value: 5.64159
+			    }
+			]
+		    },
+		    {
+			values: [
+			    {
+				path: 'environment.depth.belowTransducer',
+				value: 59
+			    }
+			]
+		    }
+		]
+	    })
+
 	    if ((tunix-timestamp) < period * 1000) { // only log if age of data < period
 
-		let latitude=Number(app.getSelfPath('navigation.position.value.latitude')).toFixed(6)
 		let longitude=Number(app.getSelfPath('navigation.position.value.longitude')).toFixed(6)
-		let sog=Number(app.getSelfPath('navigation.speedOverGround.value')).toFixed(2)
-		let cog=Number(app.getSelfPath('navigation.courseOverGroundTrue.value')).toFixed()
-		let stw=Number(app.getSelfPath('navigation.speedThroughWater.value')).toFixed(2)
-		let aws=Number(app.getSelfPath('environment.wind.speedApparent')).toFixed()
-		let awa=Number(app.getSelfPath('environment.wind.angleApparent')).toFixed()
+		let latitude=Number(app.getSelfPath('navigation.position.value.latitude')).toFixed(6)
+		let sog=(Number(app.getSelfPath('navigation.speedOverGround.value'))*0.5144444).toFixed(2)
+		let cog=(Number(app.getSelfPath('navigation.courseOverGroundTrue.value'))*(180/Math.PI)).toFixed()
+		let stw=(Number(app.getSelfPath('navigation.speedThroughWater.value'))*0.5144444).toFixed(2)
+		let aws=(Number(app.getSelfPath('environment.wind.speedApparent.value'))*0.5144444).toFixed(2)
+		let awa=(Number(app.getSelfPath('environment.wind.angleApparent.value'))*(180/Math.PI)).toFixed()
 
+		row=datetime+","+longitude+","+latitude+","+sog+","+cog+","+stw+","+aws+","+awa+"\n"
 		fs.appendFile(
 		    path.join(logDir, logFileName),
-		    datetime+","+latitude+","+longitude+","+sog+","+cog+","+stw+","+aws+","+awa+"\n",
+		    row,
 		    (err) => {
 			if (err) throw err;
 		    }
 		)
+		app.debug(`sk-perf-logger adding row : ${row}`)
+
 	    }
+
 	} catch (err) {
 	    console.log(err)
 	}
@@ -155,7 +194,7 @@ module.exports = function(app) {
 	try {
 	    fs.appendFile(
 		path.join(logDir, logFileName),
-		"time,lat,lon,sog,cog,stw,aws,awa\n", (err) => {
+		"time,lon,lat,sog,cog,stw,aws,awa\n", (err) => {
 		    if (err) throw err;
 		}
 	    )
