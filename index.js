@@ -25,7 +25,9 @@ module.exports = function(app) {
     var logFileName = "data_log.json"
     var timerRotationId
     var timerId
-
+    var model
+    var sailconfig
+    
     plugin.id = "sk-perf-logger"
     plugin.name = "Signal K perf data logger"
     plugin.description = "Log Signal K performance data to csv files."
@@ -52,8 +54,20 @@ module.exports = function(app) {
 	    },
 	    period: {
 		type: 'number',
-		title: 'Logging period.',
+		title: 'Logging period',
 		default: 300
+	    },
+	    model: {
+		type: 'string',
+		title: 'Sailboat model',
+		default: 'Muscadet Q',
+		enum: ['Muscadet Q', 'Muscadet DL'],
+	    },
+	    sailconfig: {
+		type: 'string',
+		title: 'Sail configuration',
+		default: 'Inter + GV haute',
+		enum: ['Génois + GV haute', 'Inter + GV haute', 'Inter + GV 1 ris', 'Foc de route + GV 1 ris', 'Foc de route + GV 2 ris']
 	    }
 	}
     }
@@ -68,6 +82,8 @@ module.exports = function(app) {
 	logRotationInterval = options.logrotationinterval
 	context = options.context
 	period = options.period
+	model = options.model
+	sailconfig=options.sailconfig
 
 	if (!fs.existsSync(logDir)) {
 	    // attempt creating the log directory
@@ -96,7 +112,7 @@ module.exports = function(app) {
 	    timerRotationId = setInterval(() => { rotateLogFile(new Date(), true) }, logRotationInterval * 1000 )
 	}
 
-	timerId = setInterval(() => { writeData() }, period * 1000 )
+	timerId = setInterval(() => { writeData(model, sailconfig) }, period * 1000 )
     }
     
     plugin.stop = function () {
@@ -109,8 +125,8 @@ module.exports = function(app) {
     }
     return plugin
 
-    function writeData() {
-	//	timestamp,lat,lon,sog,cog,stw,aws,awa
+    function writeData(model, config) {
+
 	try {
 	    let tunix=Math.round(+new Date())
 	    let datetime=app.getSelfPath('navigation.datetime.value')
@@ -163,7 +179,7 @@ module.exports = function(app) {
 		let aws=(Number(app.getSelfPath('environment.wind.speedApparent.value'))*0.5144444).toFixed(2)
 		let awa=(Number(app.getSelfPath('environment.wind.angleApparent.value'))*(180/Math.PI)).toFixed()
 
-		row=datetime+","+longitude+","+latitude+","+sog+","+cog+","+stw+","+aws+","+awa+"\n"
+		row=datetime+","+model+","+config+","+longitude+","+latitude+","+sog+","+cog+","+stw+","+aws+","+awa+"\n"
 		fs.appendFile(
 		    path.join(logDir, logFileName),
 		    row,
@@ -194,7 +210,7 @@ module.exports = function(app) {
 	try {
 	    fs.appendFile(
 		path.join(logDir, logFileName),
-		"time,lon,lat,sog,cog,stw,aws,awa\n", (err) => {
+		"time,model,config,lon,lat,sog,cog,stw,aws,awa\n", (err) => {
 		    if (err) throw err;
 		}
 	    )
