@@ -132,6 +132,7 @@ module.exports = function(app) {
 	    let datetime=app.getSelfPath('navigation.datetime.value')
 	    let timestamp=Date.parse(datetime)
 
+	    /*
 	    app.handleMessage(plugin.id, {
 		updates: [
 		    {
@@ -168,6 +169,7 @@ module.exports = function(app) {
 		    }
 		]
 	    })
+*/
 
 	    if ((tunix-timestamp) < period * 1000) { // only log if age of data < period
 
