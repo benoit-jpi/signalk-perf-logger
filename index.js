@@ -132,45 +132,6 @@ module.exports = function(app) {
 	    let datetime=app.getSelfPath('navigation.datetime.value')
 	    let timestamp=Date.parse(datetime)
 
-	    /*
-	    app.handleMessage(plugin.id, {
-		updates: [
-		    {
-			values: [
-			    {
-				path: 'environment.wind.speedApparent',
-				value: 5.045
-			    }
-			]
-		    },
-		    {
-			values: [
-			    {
-				path: 'environment.wind.angleApparent',
-				value: 5.64159
-			    }
-			]
-		    },
-		    {
-			values: [
-			    {
-				path: 'navigation.speedThroughWater',
-				value: 5.64159
-			    }
-			]
-		    },
-		    {
-			values: [
-			    {
-				path: 'environment.depth.belowTransducer',
-				value: 59
-			    }
-			]
-		    }
-		]
-	    })
-*/
-
 	    if ((tunix-timestamp) < period * 1000) { // only log if age of data < period
 
 		let longitude=Number(app.getSelfPath('navigation.position.value.longitude')).toFixed(6)
@@ -180,8 +141,9 @@ module.exports = function(app) {
 		let stw=(Number(app.getSelfPath('navigation.speedThroughWater.value'))*0.5144444).toFixed(2)
 		let aws=(Number(app.getSelfPath('environment.wind.speedApparent.value'))*0.5144444).toFixed(2)
 		let awa=(Number(app.getSelfPath('environment.wind.angleApparent.value'))*(180/Math.PI)).toFixed()
+		let dbk=(Number(app.getSelfPath('environment.depth.belowKeel.value'))).toFixed(1)
 
-		row=datetime+","+model+","+config+","+longitude+","+latitude+","+sog+","+cog+","+stw+","+aws+","+awa+"\n"
+		row=datetime+","+model+","+config+","+longitude+","+latitude+","+sog+","+cog+","+stw+","+aws+","+awa+","+dbk+"\n"
 		fs.appendFile(
 		    path.join(logDir, logFileName),
 		    row,
@@ -212,7 +174,7 @@ module.exports = function(app) {
 	try {
 	    fs.appendFile(
 		path.join(logDir, logFileName),
-		"time,model,config,lon,lat,sog,cog,stw,aws,awa\n", (err) => {
+		"time,model,config,lon,lat,sog,cog,stw,aws,awa,dbk\n", (err) => {
 		    if (err) throw err;
 		}
 	    )
