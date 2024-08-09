@@ -67,7 +67,13 @@ module.exports = function(app) {
 		type: 'string',
 		title: 'Sail configuration',
 		default: 'Inter + GV haute',
-		enum: ['Génois + GV haute', 'Inter + GV haute', 'Inter + GV 1 ris', 'Foc de route + GV 1 ris', 'Foc de route + GV 2 ris']
+		enum: ['Génois + GV haute', 'Inter + GV haute', 'Inter + GV 1 ris', 'Foc de route + GV 1 ris', 'Foc de route + GV 2 ris'],
+	    },
+	    enginestate: {
+		type: 'string',
+		title: 'Engine state',
+		default: 'started',
+		enum: ['started', 'stopped'],
 	    }
 	}
     }
@@ -84,6 +90,7 @@ module.exports = function(app) {
 	period = options.period
 	model = options.model
 	sailconfig=options.sailconfig
+	enginestate=options.enginestate
 
 	if (!fs.existsSync(logDir)) {
 	    // attempt creating the log directory
@@ -112,7 +119,7 @@ module.exports = function(app) {
 	    timerRotationId = setInterval(() => { rotateLogFile(new Date(), true) }, logRotationInterval * 1000 )
 	}
 
-	timerId = setInterval(() => { writeData(model, sailconfig) }, period * 1000 )
+	timerId = setInterval(() => { writeData(model, sailconfig, enginestate) }, period * 1000 )
     }
     
     plugin.stop = function () {
@@ -125,14 +132,14 @@ module.exports = function(app) {
     }
     return plugin
 
-    function writeData(model, config) {
+    function writeData(model, config, state) {
 
 	try {
 	    let tunix=Math.round(+new Date())
 	    let datetime=app.getSelfPath('navigation.datetime.value')
 	    let timestamp=Date.parse(datetime)
 
-	    if ((tunix-timestamp) < period * 1000) { // only log if age of data < period
+//	    if ((tunix-timestamp) < period * 1000) { // only log if age of data < period
 
 		let longitude=Number(app.getSelfPath('navigation.position.value.longitude')).toFixed(6)
 		let latitude=Number(app.getSelfPath('navigation.position.value.latitude')).toFixed(6)
@@ -142,8 +149,7 @@ module.exports = function(app) {
 		let aws=(Number(app.getSelfPath('environment.wind.speedApparent.value'))*1.94384).toFixed(2)
 		let awa=(Number(app.getSelfPath('environment.wind.angleApparent.value'))*(180/Math.PI)).toFixed()
 		let dbk=(Number(app.getSelfPath('environment.depth.belowKeel.value'))).toFixed(1)
-
-		row=datetime+","+model+","+config+","+longitude+","+latitude+","+sog+","+cog+","+stw+","+aws+","+awa+","+dbk+"\n"
+		row=datetime+","+model+","+config+","+longitude+","+latitude+","+sog+","+cog+","+stw+","+aws+","+awa+","+dbk+","+state+"\n"
 		fs.appendFile(
 		    path.join(logDir, logFileName),
 		    row,
@@ -153,7 +159,7 @@ module.exports = function(app) {
 		)
 		app.debug(`sk-perf-logger adding row : ${row}`)
 
-	    }
+//	    }
 
 	} catch (err) {
 	    console.log(err)
@@ -174,7 +180,7 @@ module.exports = function(app) {
 	try {
 	    fs.appendFile(
 		path.join(logDir, logFileName),
-		"time,model,config,lon,lat,sog,cog,stw,aws,awa,dbk\n", (err) => {
+		"time,model,config,lon,lat,sog,cog,stw,aws,awa,dbk,engine\n", (err) => {
 		    if (err) throw err;
 		}
 	    )
